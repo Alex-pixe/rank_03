@@ -5,10 +5,11 @@
 #include <math.h>
 
 typedef struct s_figure {
-	char c;
-	float X;
-	float Y;
-	float radius;
+	char r;
+	float xtl;
+	float ytl;
+	float f_width;
+	float f_hight;
 	char draw;
 } t_figure;
 
@@ -23,7 +24,7 @@ typedef struct s_fild {
 int	pars_f(char *arg, t_fild *fild);
 int	init_fild(t_fild *fild);
 int	drawing_res(t_fild *fild);
-int	put_circle(t_fild *fild);
+int	put_rectangle(t_fild *fild);
 
 int	main(int argc, char **argv)
 {
@@ -55,15 +56,15 @@ int	pars_f(char *arg, t_fild *fild)
 		return (1);
 	if (init_fild(fild))
 		return (1);
-	while ((err = fscanf(fd, "%c %f %f %f %c ", &fild->figure.c, &fild->figure.X, &fild->figure.Y,\
-	 &fild->figure.radius, &fild->figure.draw)) == 5)
+	while ((err = fscanf(fd, "%c %f %f %f %f %c ", &fild->figure.r, &fild->figure.xtl, &fild->figure.ytl,\
+	 &fild->figure.f_width, &fild->figure.f_hight, &fild->figure.draw)) == 6)
 	{
-		if (fild->figure.radius <= 0)
+		if (fild->figure.f_width <= 0 || fild->figure.f_hight <= 0)
 		{
 			free(fild->canvas);
 			return (1);
 		}
-		if (put_circle(fild))
+		if (put_rectangle(fild))
 		{
 			free(fild->canvas);
 			return (1);
@@ -79,26 +80,28 @@ int	pars_f(char *arg, t_fild *fild)
 	}
 }
 
-int	put_circle(t_fild *fild)
+int	put_rectangle(t_fild *fild)
 {
 	int i = 0;
-	int j;
-	if (fild->figure.c != 'c' && fild->figure.c != 'C')
+	int j = 0;
+	float xbr = fild->figure.xtl + fild->figure.f_width;
+	float ybr = fild->figure.ytl + fild->figure.f_hight;
+	if (fild->figure.r != 'r' && fild->figure.r != 'R')
 		return (1);
 	while (i < fild->hight)
 	{
 		j = 0;
 		while (j < fild->width)
 		{
-			if (sqrtf((fild->figure.X - (float)j) * (fild->figure.X - (float)j) \
-			+ (fild->figure.Y - (float)i) * (fild->figure.Y - (float)i)) <= fild->figure.radius && fild->figure.c == 'C')
-				fild->canvas[(fild->width + 1) * i + j] = fild->figure.draw;
-			else if (sqrtf((fild->figure.X - (float)j) * (fild->figure.X - (float)j) \
-			+ (fild->figure.Y - (float)i) * (fild->figure.Y - (float)i)) <= fild->figure.radius && fild->figure.c == 'c')
+			if (fild->figure.xtl <= j && xbr >= j && fild->figure.ytl <= i && ybr >= i)
 			{
-				if (fild->figure.radius - sqrtf((fild->figure.X - (float)j) * (fild->figure.X - (float)j) \
-			+ (fild->figure.Y - (float)i) * (fild->figure.Y - (float)i)) < 1)
+				if (fild->figure.r == 'R')
 					fild->canvas[(fild->width + 1) * i + j] = fild->figure.draw;
+				else
+				{
+					if ((ybr - i < 1 || i - fild->figure.ytl < 1) || (xbr - j < 1 || j - fild->figure.xtl < 1))
+						fild->canvas[(fild->width + 1) * i + j] = fild->figure.draw;
+				}
 			}
 			j++;
 		}
